@@ -5,38 +5,82 @@ import Image from "next/image";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { contactConfig } from "../config/contact";
 
 export default function Home() {
   // Auto-playing slides
   const slides = [
-    {
-      title: "Global Trade Solutions",
-      subtitle: "Connecting Businesses Worldwide Through Excellence in Export & Import",
-      image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1920&q=80"
-    },
-    {
-      title: "Verified Global Buyers",
-      subtitle: "Access thousands of verified buyers from around the world",
-      image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=1920&q=80"
-    },
-    {
-      title: "Trusted Trade Partner",
-      subtitle: "Your reliable partner for international business success",
-      image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80"
-    }
+    "/images/slide1.jpg",
+    "/images/slide2.jpg",
+    "/images/slide3.jpg",
+    "/images/slide4.jpg"
   ];
 
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [slidesToShow, setSlidesToShow] = useState(3);
+
+  // Responsive slides to show
+  useEffect(() => {
+    const updateSlidesToShow = () => {
+      if (window.innerWidth < 640) {
+        setSlidesToShow(1); // Mobile: 1 slide
+      } else if (window.innerWidth < 1024) {
+        setSlidesToShow(1); // Tablet: 2 slides
+      } else {
+        setSlidesToShow(1); // Desktop: 3 slides
+      }
+    };
+
+    updateSlidesToShow();
+    window.addEventListener('resize', updateSlidesToShow);
+    return () => window.removeEventListener('resize', updateSlidesToShow);
+  }, []);
+
+  // Calculate max index based on slides to show
+  const maxIndex = useMemo(() => {
+    return Math.max(0, slides.length - slidesToShow);
+  }, [slides.length, slidesToShow]);
+
+  // Reset current index when slidesToShow changes
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [slidesToShow]);
+
+  const goToSlide = (index: number) => {
+    setCurrentIndex(Math.max(0, Math.min(index, maxIndex)));
+  };
+
+  const nextSlide = () => {
+    setCurrentIndex((prev) => {
+      if (prev >= maxIndex) {
+        return 0; // Loop back to start
+      }
+      return prev + 1;
+    });
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex((prev) => {
+      if (prev <= 0) {
+        return maxIndex; // Loop to end
+      }
+      return prev - 1;
+    });
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000); // Change slide every 5 seconds
+      setCurrentIndex((prev) => {
+        if (prev >= maxIndex) {
+          return 0; // Loop back to start
+        }
+        return prev + 1;
+      });
+    }, 4000); // Change slide every 4 seconds
 
     return () => clearInterval(timer);
-  }, [slides.length]);
+  }, [maxIndex]);
 
   // Buyers data cards
   const buyers = [
@@ -170,50 +214,9 @@ export default function Home() {
     }
   ];
 
-  const [visibleCards, setVisibleCards] = useState(2);
-  const [isAnimatingOut, setIsAnimatingOut] = useState(false);
-  const [displayCards, setDisplayCards] = useState(2); // Cards to display (includes animating ones)
-  const cardsPerLoad = 2;
-  const initialCards = 2;
-
-  const handleSeeMore = () => {
-    const newCount = Math.min(visibleCards + cardsPerLoad, buyers.length);
-    setVisibleCards(newCount);
-    setDisplayCards(newCount);
-    // Smooth scroll to newly added cards on mobile
-    setTimeout(() => {
-      const cardsContainer = document.querySelector('.mobile-cards-container');
-      if (cardsContainer) {
-        cardsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
-    }, 100);
-  };
-
-  const handleSeeLess = () => {
-    // Only hide if there are more than initial cards
-    if (visibleCards <= initialCards) return;
-    
-    // Start fade-out animation - keep cards visible during animation
-    setIsAnimatingOut(true);
-    
-    // Calculate new count (decrease by cardsPerLoad)
-    const newCount = Math.max(initialCards, visibleCards - cardsPerLoad);
-    
-    // After animation completes (300ms), update state and scroll
-    setTimeout(() => {
-      setVisibleCards(newCount);
-      setDisplayCards(newCount);
-      // Reset animation state after a brief delay
-      setTimeout(() => {
-        setIsAnimatingOut(false);
-        // Smooth scroll back to newly visible cards on mobile
-        const cardsContainer = document.querySelector('.mobile-cards-container');
-        if (cardsContainer) {
-          cardsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-      }, 50);
-    }, 300); // Match animation duration
-  };
+  // Initial cards to show: 6 on desktop, 4 on mobile
+  const initialCardsDesktop = 6;
+  const initialCardsMobile = 4;
 
   return (
     <main className="min-h-screen">
@@ -235,72 +238,91 @@ export default function Home() {
       <Header />
       <Navigation />
 
-      {/* Auto-playing Slides Section */}
-      <section className="relative h-[500px] sm:h-[600px] md:h-[700px] w-full overflow-hidden">
-        {slides.map((slide, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === currentSlide ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${slide.image})` }}>
-              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/70"></div>
-            </div>
-            <div className="relative z-10 h-full flex items-center justify-center">
-              <div className="text-center text-white px-4 max-w-4xl">
-                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 drop-shadow-2xl">
-                  {slide.title}
-                </h1>
-                <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-6 md:mb-8 text-gray-200 drop-shadow-lg">
-                  {slide.subtitle}
-                </p>
-                <div className="flex gap-3 md:gap-4 justify-center flex-wrap">
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 md:px-8 py-2 md:py-3 rounded-lg text-sm md:text-base transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1">
-                    Explore Services
-                  </button>
-                  <button className="bg-transparent border-2 border-white hover:bg-white/10 text-white font-bold px-6 md:px-8 py-2 md:py-3 rounded-lg text-sm md:text-base transition-all">
-                    Learn More
-                  </button>
+      {/* Multi-Slide Carousel Section */}
+      <section className="relative w-full bg-gray-100 py-8 md:py-12">
+        <div className="container mx-auto px-4">
+          <div className="relative overflow-hidden rounded-lg">
+            {/* Carousel Container */}
+            <div 
+              className="flex transition-transform duration-700 ease-in-out"
+              style={{
+                transform: `translateX(-${currentIndex * (100 / slidesToShow)}%)`
+              }}
+            >
+              {slides.map((slide, index) => (
+                <div
+                  key={index}
+                  className="flex-shrink-0 px-2 sm:px-3 flex items-center justify-center"
+                  style={{
+                    width: `${100 / slidesToShow}%`
+                  }}
+                >
+                  <div className="relative w-full lg:max-w-[800px] xl:max-w-[800px] mx-auto rounded-lg overflow-hidden shadow-lg">
+                    {/* Desktop: Constrained width to prevent cropping, Mobile/Tablet: Full width with fixed height */}
+                    <div className="relative w-full h-[250px] sm:h-[350px] md:h-[250px] lg:h-[300px] xl:h-[550px] rounded-lg overflow-hidden bg-gray-100">
+                      <div 
+                        className="absolute inset-0 bg-contain bg-center bg-no-repeat" 
+                        style={{ backgroundImage: `url(${slide})` }}
+                      ></div>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
-          </div>
-        ))}
-        
-        {/* Slide Indicators */}
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 flex gap-2">
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all ${
-                index === currentSlide ? 'bg-white w-8' : 'bg-white/50 hover:bg-white/75'
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
 
-        {/* Navigation Arrows */}
-        <button
-          onClick={() => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)}
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all"
-          aria-label="Previous slide"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <button
-          onClick={() => setCurrentSlide((prev) => (prev + 1) % slides.length)}
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all"
-          aria-label="Next slide"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
+            {/* Navigation Arrows - Hidden on mobile, only show on desktop */}
+            {maxIndex > 0 && (
+              <>
+                <button
+                  onClick={prevSlide}
+                  className="hidden md:block absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-gray-800 p-2 sm:p-3 rounded-full shadow-lg transition-all backdrop-blur-sm"
+                  aria-label="Previous slides"
+                >
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  onClick={nextSlide}
+                  className="hidden md:block absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-gray-800 p-2 sm:p-3 rounded-full shadow-lg transition-all backdrop-blur-sm"
+                  aria-label="Next slides"
+                >
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Thumbnail Navigation - Show all slides */}
+          {/* <div className="mt-6 flex gap-2 sm:gap-3 justify-center overflow-x-auto pb-2 px-2">
+            {slides.map((slide, index) => {
+              const isActive = index >= currentIndex && index < currentIndex + slidesToShow;
+              return (
+                <button
+                  key={index}
+                  onClick={() => {
+                    // Calculate the best starting index to show this slide
+                    const targetIndex = Math.max(0, Math.min(index, maxIndex));
+                    goToSlide(targetIndex);
+                  }}
+                  className={`flex-shrink-0 relative w-16 h-12 sm:w-20 sm:h-16 md:w-24 md:h-20 lg:w-28 lg:h-24 rounded-lg overflow-hidden border-2 transition-all ${
+                    isActive
+                      ? 'border-blue-500 ring-2 ring-blue-300 scale-105 shadow-lg'
+                      : 'border-gray-300 hover:border-gray-400 opacity-70 hover:opacity-100 hover:scale-105'
+                  }`}
+                  aria-label={`View slide ${index + 1}`}
+                >
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center" 
+                    style={{ backgroundImage: `url(${slide})` }}
+                  ></div>
+                </button>
+              );
+            })}
+          </div> */}
+        </div>
       </section>
 
 
@@ -316,24 +338,14 @@ export default function Home() {
             <div className="w-20 h-1 bg-[#00bcd4] mx-auto"></div>
           </div>
 
-          {/* Mobile: Vertical cards (2-3 cards) */}
-          <div className="md:hidden mobile-cards-container">
+          {/* Mobile: Vertical cards (4 cards) */}
+          <div className="md:hidden">
             <div className="grid grid-cols-1 gap-4 mb-6">
-              {buyers.slice(0, displayCards).map((buyer, index) => {
-                // During animation out, only animate the last cardsPerLoad cards being removed
-                const isLastCardInBatch = index >= displayCards - cardsPerLoad;
-                const shouldAnimateOut = isAnimatingOut && isLastCardInBatch && index >= initialCards;
-                const shouldAnimateIn = !isAnimatingOut && index >= initialCards;
-                
+              {buyers.slice(0, initialCardsMobile).map((buyer) => {
                 return (
                 <div
                   key={buyer.id}
-                  className={`bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-500 border border-gray-200 overflow-hidden flex-shrink-0 h-full ${
-                    shouldAnimateIn ? 'animate-slideUp' : ''
-                  } ${shouldAnimateOut ? 'animate-slideDown' : ''}`}
-                  style={{
-                    animationDelay: shouldAnimateIn ? `${(index - initialCards) * 0.1}s` : '0s',
-                  }}
+                  className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-500 border border-gray-200 overflow-hidden flex-shrink-0 h-full"
                 >
                 {/* Card Header */}
                 <div className="p-4 pb-3 bg-gray-50 border-b border-gray-200">
@@ -401,24 +413,14 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Desktop: Horizontal cards - 2 cards per row */}
+          {/* Desktop: Horizontal cards - 2 cards per row, 6 cards total (3 rows) */}
           <div className="hidden md:block pb-4 mb-6">
             <div className="grid grid-cols-2 gap-8 max-w-6xl mx-auto">
-              {buyers.slice(0, displayCards).map((buyer, index) => {
-                // During animation out, only animate the last cardsPerLoad cards being removed
-                const isLastCardInBatch = index >= displayCards - cardsPerLoad;
-                const shouldAnimateOut = isAnimatingOut && isLastCardInBatch && index >= initialCards;
-                const shouldAnimateIn = !isAnimatingOut && index >= initialCards;
-                
+              {buyers.slice(0, initialCardsDesktop).map((buyer) => {
                 return (
                 <div
                   key={buyer.id}
-                  className={`bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-500 border border-gray-200 overflow-hidden w-full flex flex-col ${
-                    shouldAnimateIn ? 'animate-fadeIn' : ''
-                  } ${shouldAnimateOut ? 'animate-slideDown' : ''}`}
-                  style={{
-                    animationDelay: shouldAnimateIn ? `${(index - initialCards) * 0.1}s` : '0s',
-                  }}
+                  className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-500 border border-gray-200 overflow-hidden w-full flex flex-col"
                 >
                   {/* Card Header */}
                   <div className="p-4 pb-3 bg-gray-50 border-b border-gray-200">
@@ -506,24 +508,14 @@ export default function Home() {
             </div>
           </div>
 
-          {/* See More / See Less Buttons */}
-          <div className="text-center mt-8 flex flex-col md:flex-row gap-4 justify-center items-center">
-            {visibleCards < buyers.length && (
-              <button
-                onClick={handleSeeMore}
-                className="bg-[#00bcd4] hover:bg-[#00acc1] text-white font-semibold px-8 py-3 rounded-lg transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                See More
-              </button>
-            )}
-            {visibleCards > initialCards && (
-              <button
-                onClick={handleSeeLess}
-                className="bg-gray-500 hover:bg-gray-600 text-white font-semibold px-8 py-3 rounded-lg transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                See Less
-              </button>
-            )}
+          {/* Show All Button */}
+          <div className="text-center mt-8">
+            <Link
+              href="/buyers"
+              className="inline-block bg-[#00bcd4] hover:bg-[#00acc1] text-white font-semibold px-8 py-3 rounded-lg transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              Show All Buyers
+            </Link>
           </div>
         </div>
       </section>
