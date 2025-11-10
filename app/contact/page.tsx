@@ -1,10 +1,63 @@
+"use client";
+
 import Image from "next/image";
 import Header from "../components/Header";
 import Navigation from "../components/Navigation";
 import { contactConfig } from "../../config/contact";
 import Footer from "../components/Footer";
+import { FormEvent, useState } from "react";
 
 export default function Contact() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    const payload = {
+      name: String(formData.get("name") ?? "").trim(),
+      email: String(formData.get("email") ?? "").trim(),
+      contact: String(formData.get("contact") ?? "").trim(),
+      subject: String(formData.get("subject") ?? "").trim(),
+      message: String(formData.get("message") ?? "").trim(),
+    };
+
+    if (!payload.name || !payload.email || !payload.message) {
+      setError("Please fill in your name, email, and message.");
+      setSuccess(null);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await fetch("/api/contact-leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setError(result?.message ?? "Something went wrong. Please try again.");
+        return;
+      }
+
+      setSuccess(result?.message ?? "Thanks for reaching out!");
+      form.reset();
+    } catch (submitError) {
+      setError("Network error. Please try again in a moment.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-white">
       <Header />
@@ -42,12 +95,13 @@ export default function Contact() {
                 Request a Call Back
               </h2>
               <div className="w-20 h-1 bg-[#00bcd4] mb-8"></div>
-              
-              <form className="space-y-4">
+
+              <form className="space-y-4" onSubmit={handleSubmit}>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <input
                       type="text"
+                      name="name"
                       placeholder="Name"
                       className="w-full px-4 py-3 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00bcd4] border border-gray-300"
                     />
@@ -55,6 +109,7 @@ export default function Contact() {
                   <div>
                     <input
                       type="email"
+                      name="email"
                       placeholder="Email"
                       className="w-full px-4 py-3 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00bcd4] border border-gray-300"
                     />
@@ -64,6 +119,7 @@ export default function Contact() {
                   <div>
                     <input
                       type="tel"
+                      name="contact"
                       placeholder="Phone"
                       className="w-full px-4 py-3 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00bcd4] border border-gray-300"
                     />
@@ -71,6 +127,7 @@ export default function Contact() {
                   <div>
                     <input
                       type="text"
+                      name="subject"
                       placeholder="Subject"
                       className="w-full px-4 py-3 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00bcd4] border border-gray-300"
                     />
@@ -79,15 +136,27 @@ export default function Contact() {
                 <div>
                   <textarea
                     placeholder="Message"
+                    name="message"
                     rows={4}
                     className="w-full px-4 py-3 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00bcd4] resize-none border border-gray-300"
                   ></textarea>
                 </div>
+                {error ? (
+                  <p className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+                    {error}
+                  </p>
+                ) : null}
+                {success ? (
+                  <p className="rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-600">
+                    {success}
+                  </p>
+                ) : null}
                 <button
                   type="submit"
-                  className="w-full sm:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-lg"
+                  disabled={loading}
+                  className="w-full sm:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-lg disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  Submit Now
+                  {loading ? "Submitting..." : "Submit Now"}
                 </button>
               </form>
             </div>
@@ -95,49 +164,103 @@ export default function Contact() {
             {/* Contact Information */}
             <div className="space-y-6">
               <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 md:p-8">
-                <h3 className="text-2xl font-bold text-gray-800 mb-6">Get in Touch</h3>
+                <h3 className="text-2xl font-bold text-gray-800 mb-6">
+                  Get in Touch
+                </h3>
                 <div className="space-y-6">
                   <div className="flex items-start">
                     <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <svg
+                        className="w-6 h-6 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
                       </svg>
                     </div>
                     <div className="ml-4">
-                      <h4 className="font-semibold text-gray-800 mb-1">Address</h4>
+                      <h4 className="font-semibold text-gray-800 mb-1">
+                        Address
+                      </h4>
                       <p className="text-gray-600 text-sm leading-relaxed">
                         {contactConfig.address.street},<br />
-                        {contactConfig.address.city}, {contactConfig.address.state} {contactConfig.address.zip},<br />
+                        {contactConfig.address.city},{" "}
+                        {contactConfig.address.state}{" "}
+                        {contactConfig.address.zip},<br />
                         {contactConfig.address.country}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-start">
                     <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                      <svg
+                        className="w-6 h-6 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                        />
                       </svg>
                     </div>
                     <div className="ml-4">
-                      <h4 className="font-semibold text-gray-800 mb-1">Phone</h4>
-                      <a href={`tel:${contactConfig.phone.formatted}`} className="text-blue-600 hover:underline text-sm">
+                      <h4 className="font-semibold text-gray-800 mb-1">
+                        Phone
+                      </h4>
+                      <a
+                        href={`tel:${contactConfig.phone.formatted}`}
+                        className="text-blue-600 hover:underline text-sm"
+                      >
                         {contactConfig.phone.display}
                       </a>
                     </div>
                   </div>
                   <div className="flex items-start">
                     <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      <svg
+                        className="w-6 h-6 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                        />
                       </svg>
                     </div>
                     <div className="ml-4">
-                      <h4 className="font-semibold text-gray-800 mb-1">Email</h4>
-                      <a href={`mailto:${contactConfig.email.primary}`} className="text-blue-600 hover:underline text-sm block">
+                      <h4 className="font-semibold text-gray-800 mb-1">
+                        Email
+                      </h4>
+                      <a
+                        href={`mailto:${contactConfig.email.primary}`}
+                        className="text-blue-600 hover:underline text-sm block"
+                      >
                         {contactConfig.email.primary}
                       </a>
-                      <a href={`mailto:${contactConfig.email.support}`} className="text-blue-600 hover:underline text-sm block">
+                      <a
+                        href={`mailto:${contactConfig.email.support}`}
+                        className="text-blue-600 hover:underline text-sm block"
+                      >
                         {contactConfig.email.support}
                       </a>
                     </div>
@@ -159,7 +282,9 @@ export default function Contact() {
 
           {/* Map Section */}
           <div className="mt-12 md:mt-16">
-            <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Find Us</h2>
+            <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+              Find Us
+            </h2>
             <div className="rounded-xl overflow-hidden shadow-xl border border-gray-200">
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3890.123456789!2d80.1885!3d12.9716!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTLCsDU4JzE3LjgiTiA4MMKwMTEnMTguNiJF!5e0!3m2!1sen!2sin!4v1234567890123!5m2!1sen!2sin"
