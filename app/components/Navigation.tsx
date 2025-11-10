@@ -166,19 +166,6 @@ export default function Navigation() {
                 </div>
               )}
             </div>
-
-            {/* Sign Up Button Mobile */}
-            <Link 
-              href="/contact"
-              className="block w-full mt-4 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors text-sm text-center"
-              onClick={() => {
-                setIsOpen(false);
-                const event = new CustomEvent('menuStateChange', { detail: false });
-                window.dispatchEvent(event);
-              }}
-            >
-              Sign Up
-            </Link>
           </div>
         </div>
       </div>
