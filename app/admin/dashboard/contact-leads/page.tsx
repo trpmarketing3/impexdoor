@@ -158,12 +158,12 @@ export default async function ContactLeadsPage({
   return (
     <section className="flex h-full flex-col gap-6">
       <div className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-slate-200 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 border-b border-slate-200 px-4 sm:px-6 py-4 sm:py-6">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">
+            <h2 className="text-base sm:text-lg font-semibold text-slate-900">
               Contact Leads
             </h2>
-            <p className="text-sm text-slate-500">
+            <p className="text-xs sm:text-sm text-slate-500">
               View recent inquiries from potential buyers.
             </p>
           </div>
@@ -176,12 +176,12 @@ export default async function ContactLeadsPage({
               name="query"
               defaultValue={query}
               placeholder="Search leads..."
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 sm:w-60"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs sm:text-sm text-slate-700 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 sm:w-60"
             />
             <select
               name="perPage"
               defaultValue={String(perPage)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 sm:w-32"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs sm:text-sm text-slate-700 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 sm:w-32"
             >
               {PER_PAGE_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -192,15 +192,69 @@ export default async function ContactLeadsPage({
             <input type="hidden" name="page" value="1" />
             <button
               type="submit"
-              className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+              className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-slate-800"
             >
               Apply
             </button>
           </form>
         </div>
 
-        <div className="flex flex-1 flex-col overflow-hidden px-6 pb-6">
-          <div className="mt-6 flex-1 overflow-hidden rounded-xl border border-slate-200">
+        <div className="flex flex-1 flex-col overflow-hidden px-4 sm:px-6 pb-4 sm:pb-6">
+          {/* Mobile Card View */}
+          <div className="lg:hidden mt-4 space-y-4">
+            {leads.length === 0 ? (
+              <div className="text-center py-12 text-slate-500">
+                {query
+                  ? "No leads match your search."
+                  : "No leads have been submitted yet."}
+              </div>
+            ) : (
+              leads.map((lead) => (
+                <div
+                  key={lead.id}
+                  className="bg-white rounded-lg border border-slate-200 p-4 space-y-3"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-slate-900 text-sm">
+                        {lead.name}
+                      </h3>
+                      <p className="text-xs text-slate-500 mt-1 break-all">
+                        {lead.email}
+                      </p>
+                    </div>
+                    <p className="text-xs text-slate-500 shrink-0">
+                      {DATE_FORMAT.format(new Date(lead.created_at))}
+                    </p>
+                  </div>
+                  
+                  {lead.contact && (
+                    <div className="text-xs">
+                      <span className="text-slate-500">Contact:</span>
+                      <span className="text-slate-900 ml-1">{lead.contact}</span>
+                    </div>
+                  )}
+                  
+                  {lead.subject && (
+                    <div className="text-xs">
+                      <span className="text-slate-500 font-medium">Subject:</span>
+                      <span className="text-slate-900 ml-1">{lead.subject}</span>
+                    </div>
+                  )}
+                  
+                  {lead.message && (
+                    <div className="text-xs">
+                      <span className="text-slate-500 font-medium">Message:</span>
+                      <p className="text-slate-900 mt-1 line-clamp-3">{lead.message}</p>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden lg:block mt-6 flex-1 overflow-hidden rounded-xl border border-slate-200">
             <div className="h-full overflow-auto">
               <table className="min-w-full divide-y divide-slate-200 text-left text-sm text-slate-600">
                 <thead className="sticky top-0 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -230,8 +284,12 @@ export default async function ContactLeadsPage({
                           <span className="text-slate-400">—</span>
                         )}
                       </td>
-                      <td className="px-4 py-3">
-                        {lead.message || (
+                      <td className="px-4 py-3 max-w-md">
+                        {lead.message ? (
+                          <span className="line-clamp-2" title={lead.message}>
+                            {lead.message}
+                          </span>
+                        ) : (
                           <span className="text-slate-400">—</span>
                         )}
                       </td>
@@ -258,50 +316,52 @@ export default async function ContactLeadsPage({
           </div>
         </div>
 
-        <div className="border-t border-slate-200 px-6 py-4">
-          <div className="flex flex-col gap-3 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+        <div className="border-t border-slate-200 px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex flex-col gap-3 text-xs sm:text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
             <span>
               Showing {start === 0 ? 0 : `${start}-${end}`} of {total} leads
             </span>
-            <nav className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
-              {page > 1 ? (
-                <Link
-                  href={pageHref(page - 1)}
-                  className="rounded-lg px-3 py-1.5 text-slate-600 transition hover:bg-slate-100"
-                >
-                  Prev
-                </Link>
-              ) : (
-                <span className="rounded-lg px-3 py-1.5 text-slate-400">
-                  Prev
-                </span>
-              )}
-              {visiblePages.map((pageNumber) => (
-                <Link
-                  key={pageNumber}
-                  href={pageHref(pageNumber)}
-                  className={`h-8 w-8 rounded-lg text-center text-sm font-medium leading-8 transition ${
-                    pageNumber === page
-                      ? "bg-slate-900 text-white shadow"
-                      : "text-slate-600 hover:bg-slate-100"
-                  }`}
-                >
-                  {pageNumber}
-                </Link>
-              ))}
-              {page < totalPages ? (
-                <Link
-                  href={pageHref(page + 1)}
-                  className="rounded-lg px-3 py-1.5 text-slate-600 transition hover:bg-slate-100"
-                >
-                  Next
-                </Link>
-              ) : (
-                <span className="rounded-lg px-3 py-1.5 text-slate-400">
-                  Next
-                </span>
-              )}
-            </nav>
+            {totalPages > 1 && (
+              <nav className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-sm overflow-x-auto">
+                {page > 1 ? (
+                  <Link
+                    href={pageHref(page - 1)}
+                    className="rounded-lg px-2 sm:px-3 py-1.5 text-xs sm:text-sm text-slate-600 transition hover:bg-slate-100 whitespace-nowrap"
+                  >
+                    Prev
+                  </Link>
+                ) : (
+                  <span className="rounded-lg px-2 sm:px-3 py-1.5 text-xs sm:text-sm text-slate-400 whitespace-nowrap">
+                    Prev
+                  </span>
+                )}
+                {visiblePages.map((pageNumber) => (
+                  <Link
+                    key={pageNumber}
+                    href={pageHref(pageNumber)}
+                    className={`h-7 w-7 sm:h-8 sm:w-8 rounded-lg text-center text-xs sm:text-sm font-medium leading-7 sm:leading-8 transition whitespace-nowrap ${
+                      pageNumber === page
+                        ? "bg-slate-900 text-white shadow"
+                        : "text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    {pageNumber}
+                  </Link>
+                ))}
+                {page < totalPages ? (
+                  <Link
+                    href={pageHref(page + 1)}
+                    className="rounded-lg px-2 sm:px-3 py-1.5 text-xs sm:text-sm text-slate-600 transition hover:bg-slate-100 whitespace-nowrap"
+                  >
+                    Next
+                  </Link>
+                ) : (
+                  <span className="rounded-lg px-2 sm:px-3 py-1.5 text-xs sm:text-sm text-slate-400 whitespace-nowrap">
+                    Next
+                  </span>
+                )}
+              </nav>
+            )}
           </div>
         </div>
       </div>

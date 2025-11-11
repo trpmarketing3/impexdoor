@@ -137,8 +137,8 @@ export default function EditBuyerDataPage() {
   if (loading) {
     return (
       <section className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center justify-center py-12">
-          <p className="text-slate-600">Loading buyer data...</p>
+        <div className="flex items-center justify-center py-12 px-4">
+          <p className="text-sm sm:text-base text-slate-600">Loading buyer data...</p>
         </div>
       </section>
     );
@@ -147,14 +147,15 @@ export default function EditBuyerDataPage() {
   if (error && !buyerData) {
     return (
       <section className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col items-center justify-center py-12">
-          <p className="text-red-600 mb-4">{error}</p>
+        <div className="flex flex-col items-center justify-center py-12 px-4">
+          <p className="text-sm sm:text-base text-red-600 mb-4 text-center">{error}</p>
           <Link
             href="/admin/dashboard/buyers-data"
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-800"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs sm:text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-800"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to buyers data
+            <span className="hidden sm:inline">Back to buyers data</span>
+            <span className="sm:hidden">Back</span>
           </Link>
         </div>
       </section>
@@ -163,29 +164,30 @@ export default function EditBuyerDataPage() {
 
   return (
     <section className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-slate-200 px-6 py-6">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-900">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 px-4 sm:px-6 py-4 sm:py-6">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-base sm:text-lg font-semibold text-slate-900">
             Edit Buyer Requirement
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-xs sm:text-sm text-slate-500">
             Update buyer requirement details.
           </p>
         </div>
         <Link
           href="/admin/dashboard/buyers-data"
-          className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-800"
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs sm:text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-800 whitespace-nowrap"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to buyers data
+          <span className="hidden sm:inline">Back to buyers data</span>
+          <span className="sm:hidden">Back</span>
         </Link>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 pb-6">
-        <form className="mx-auto grid max-w-3xl gap-5" onSubmit={handleSubmit}>
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-4 sm:pb-6">
+        <form className="mx-auto grid max-w-3xl gap-4 sm:gap-5" onSubmit={handleSubmit}>
           <div className="grid gap-5 md:grid-cols-2">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-xs sm:text-sm font-medium text-slate-700">
                 Category
               </label>
               <Select
@@ -207,7 +209,7 @@ export default function EditBuyerDataPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-xs sm:text-sm font-medium text-slate-700">
                 Status
               </label>
               <Select value={status} onValueChange={setStatus}>
@@ -224,121 +226,122 @@ export default function EditBuyerDataPage() {
 
           <div className="grid gap-5 md:grid-cols-2">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-xs sm:text-sm font-medium text-slate-700">
                 Title
               </label>
               <input
                 type="text"
                 name="title"
                 defaultValue={buyerData?.title || ""}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs sm:text-sm text-slate-700 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
                 placeholder="Add a clear listing title"
                 required
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-xs sm:text-sm font-medium text-slate-700">
                 Buyer From
               </label>
               <input
                 type="text"
                 name="buyerFrom"
                 defaultValue={buyerData?.buyer_from || ""}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs sm:text-sm text-slate-700 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
                 placeholder="Country or region"
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-xs sm:text-sm font-medium text-slate-700">
                 Destination
               </label>
               <input
                 type="text"
                 name="destination"
                 defaultValue={buyerData?.destination || ""}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs sm:text-sm text-slate-700 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
                 placeholder="Delivery location"
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-xs sm:text-sm font-medium text-slate-700">
                 Quantity
               </label>
               <input
                 type="text"
                 name="quantity"
                 defaultValue={buyerData?.quantity || ""}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs sm:text-sm text-slate-700 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
                 placeholder="e.g. 5,000 units"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-700">
+            <label className="block text-xs sm:text-sm font-medium text-slate-700">
               Description
             </label>
             <textarea
               rows={4}
               name="description"
               defaultValue={buyerData?.description || ""}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs sm:text-sm text-slate-700 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
               placeholder="Include order details, certifications, delivery timelines..."
             />
           </div>
 
           <div className="grid gap-5 md:grid-cols-2">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-xs sm:text-sm font-medium text-slate-700">
                 Payment Terms
               </label>
               <input
                 type="text"
                 name="paymentTerms"
                 defaultValue={buyerData?.payment_terms || ""}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs sm:text-sm text-slate-700 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
                 placeholder="e.g. 30% advance"
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-xs sm:text-sm font-medium text-slate-700">
                 Looking Suppliers From
               </label>
               <input
                 type="text"
                 name="lookingSuppliersFrom"
                 defaultValue={buyerData?.looking_suppliers_from || ""}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs sm:text-sm text-slate-700 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
                 placeholder="Preferred sourcing countries"
               />
             </div>
           </div>
 
           {error ? (
-            <p className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+            <p className="rounded-lg border border-red-100 bg-red-50 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-red-600">
               {error}
             </p>
           ) : null}
           {success ? (
-            <p className="rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-600">
+            <p className="rounded-lg border border-emerald-100 bg-emerald-50 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-emerald-600">
               {success}
             </p>
           ) : null}
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4">
             <Link
               href="/admin/dashboard/buyers-data"
-              className="inline-flex items-center justify-center rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
+              className="inline-flex items-center justify-center rounded-lg border border-slate-200 px-4 py-2 text-xs sm:text-sm font-semibold text-slate-700 transition hover:border-slate-300"
             >
               Cancel
             </Link>
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 sm:px-5 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
             >
               <Save className="h-4 w-4" />
-              {saving ? "Updating..." : "Update Requirement"}
+              <span className="hidden sm:inline">{saving ? "Updating..." : "Update Requirement"}</span>
+              <span className="sm:hidden">{saving ? "Updating..." : "Update"}</span>
             </button>
           </div>
         </form>

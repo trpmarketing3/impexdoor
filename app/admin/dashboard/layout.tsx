@@ -11,9 +11,9 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-slate-100 text-slate-900">
       <div className="flex min-h-screen">
         <Sidebar />
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col min-w-0 lg:ml-0">
           <Topbar />
-          <main className="flex-1 overflow-hidden px-6 py-8">
+          <main className="flex-1 overflow-hidden px-4 sm:px-6 py-4 sm:py-8">
             <div className="flex h-full flex-col overflow-hidden">{children}</div>
           </main>
         </div>

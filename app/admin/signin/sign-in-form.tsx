@@ -43,11 +43,11 @@ export default function SignInForm() {
   };
 
   return (
-    <form className="space-y-6" onSubmit={handleSubmit}>
+    <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-2">
         <label
           htmlFor="email"
-          className="text-sm font-medium text-white/80 tracking-wide"
+          className="text-xs sm:text-sm font-medium text-white/80 tracking-wide"
         >
           Email address
         </label>
@@ -57,7 +57,7 @@ export default function SignInForm() {
             name="email"
             type="email"
             placeholder="admin@company.com"
-            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/40 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition"
+            className="w-full rounded-xl border border-white/10 bg-white/5 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-white placeholder:text-white/40 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition"
             autoComplete="email"
             required
           />
@@ -68,7 +68,7 @@ export default function SignInForm() {
         <div className="flex items-center justify-between">
           <label
             htmlFor="password"
-            className="text-sm font-medium text-white/80 tracking-wide"
+            className="text-xs sm:text-sm font-medium text-white/80 tracking-wide"
           >
             Password
           </label>
@@ -86,14 +86,14 @@ export default function SignInForm() {
             name="password"
             type={showPassword ? "text" : "password"}
             placeholder="Enter your password"
-            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/40 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition"
+            className="w-full rounded-xl border border-white/10 bg-white/5 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-white placeholder:text-white/40 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition"
             autoComplete="current-password"
             required
           />
         </div>
       </div>
 
-      <div className="flex items-center justify-between text-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs sm:text-sm">
         <label className="flex items-center gap-2 cursor-pointer select-none">
           <input
             type="checkbox"
@@ -110,13 +110,13 @@ export default function SignInForm() {
       </div>
 
       {error ? (
-        <p className="text-sm font-medium text-red-400">{error}</p>
+        <p className="text-xs sm:text-sm font-medium text-red-400">{error}</p>
       ) : null}
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold uppercase tracking-widest text-white shadow-lg shadow-blue-500/30 transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-xl bg-blue-600 px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold uppercase tracking-wider sm:tracking-widest text-white shadow-lg shadow-blue-500/30 transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {loading ? "Signing In..." : "Sign In"}
       </button>
