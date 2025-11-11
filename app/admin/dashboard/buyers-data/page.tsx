@@ -6,6 +6,7 @@ import { useState, useEffect, useMemo } from "react";
 import {
   BUYER_CATEGORIES,
   DEFAULT_BUYER_CATEGORY,
+  type BuyerCategory,
 } from "@/lib/constants/buyer-categories";
 
 const PER_PAGE_OPTIONS = [10, 25, 50] as const;
@@ -187,7 +188,7 @@ export default function BuyersDataPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => setCategory(e.target.value as BuyerCategory)}
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 sm:w-48"
             >
               {BUYER_CATEGORIES.map((option) => (
