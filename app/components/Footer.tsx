@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { contactConfig } from "../../config/contact";
 
 export default function Footer() {
@@ -12,16 +11,8 @@ export default function Footer() {
           <div>
             <div className="flex items-center mb-4 flex-wrap">
               <span className="text-3xl md:text-4xl font-bold text-white">IMPEX</span>
-              <div className="w-8 h-8 md:w-10 md:h-10 relative mx-1">
-                <Image
-                  src="/images/globe.png"
-                  alt="IMPEX DOOR"
-                  fill
-                  className="object-contain"
-                />
-              </div>
               <span className="text-3xl md:text-4xl font-bold text-white">DOOR</span>
-              <span className="text-xl md:text-2xl font-bold ml-2 text-[#00bcd4]">LLP</span>
+              <span className="text-3xl md:text-4xl font-bold text-[#00bcd4]">LLP</span>
             </div>
             <p className="text-gray-300 text-sm leading-relaxed mb-6">
               We have been a prominent market presence for many years and are a reputed business that assists suppliers, manufacturers, and traders increase online sales

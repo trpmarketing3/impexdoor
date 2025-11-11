@@ -26,6 +26,7 @@ interface LeadQueryResult {
 }
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 function parseStringParam(value: string | string[] | undefined) {
   if (Array.isArray(value)) {
@@ -59,40 +60,53 @@ async function getContactLeads({
   perPage: number;
   query: string;
 }): Promise<LeadQueryResult> {
-  const supabase = createServiceRoleClient();
-  const from = (page - 1) * perPage;
-  const to = from + perPage - 1;
+  try {
+    const supabase = createServiceRoleClient();
+    const from = (page - 1) * perPage;
+    const to = from + perPage - 1;
 
-  let builder = supabase
-    .from("contact_leads")
-    .select("*", { count: "exact" })
-    .order("created_at", { ascending: false });
+    console.log(`Fetching contact leads: page=${page}, perPage=${perPage}, query="${query}"`);
 
-  if (query) {
-    const escaped = escapeSearchTerm(query);
-    const likeValue = `%${escaped}%`;
-    builder = builder.or(
-      [
-        `name.ilike.${likeValue}`,
-        `email.ilike.${likeValue}`,
-        `contact.ilike.${likeValue}`,
-        `subject.ilike.${likeValue}`,
-        `message.ilike.${likeValue}`,
-      ].join(",")
-    );
+    let builder = supabase
+      .from("contact_leads")
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false });
+
+    if (query) {
+      const escaped = escapeSearchTerm(query);
+      const likeValue = `%${escaped}%`;
+      builder = builder.or(
+        [
+          `name.ilike.${likeValue}`,
+          `email.ilike.${likeValue}`,
+          `contact.ilike.${likeValue}`,
+          `subject.ilike.${likeValue}`,
+          `message.ilike.${likeValue}`,
+        ].join(",")
+      );
+    }
+
+    const { data, count, error } = await builder.range(from, to);
+
+    if (error) {
+      console.error("Failed to fetch contact leads:", error);
+      console.error("Error details:", JSON.stringify(error, null, 2));
+      throw new Error(`Unable to load contact leads: ${error.message || "Database error"}`);
+    }
+
+    console.log(`Fetched ${data?.length || 0} contact leads (total: ${count || 0})`);
+    if (data && data.length > 0) {
+      console.log("Sample lead:", JSON.stringify(data[0], null, 2));
+    }
+
+    return {
+      leads: (data ?? []) as LeadRow[],
+      total: count ?? 0,
+    };
+  } catch (error) {
+    console.error("Error in getContactLeads:", error);
+    throw error;
   }
-
-  const { data, count, error } = await builder.range(from, to);
-
-  if (error) {
-    console.error("Failed to fetch contact leads:", error);
-    throw new Error("Unable to load contact leads.");
-  }
-
-  return {
-    leads: (data ?? []) as LeadRow[],
-    total: count ?? 0,
-  };
 }
 
 function buildQueryString(params: Record<string, string>) {

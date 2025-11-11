@@ -25,102 +25,150 @@ function buildSearchFilter(query: string) {
 }
 
 export async function GET(request: Request) {
-  const supabase = createServiceRoleClient();
-  const url = new URL(request.url);
-  const pageParam = Number.parseInt(url.searchParams.get("page") ?? "1", 10);
-  const perPageParam = Number.parseInt(
-    url.searchParams.get("perPage") ?? "10",
-    10
-  );
-  const query = sanitize(url.searchParams.get("query"));
+  try {
+    const supabase = createServiceRoleClient();
+    const url = new URL(request.url);
+    const pageParam = Number.parseInt(url.searchParams.get("page") ?? "1", 10);
+    const perPageParam = Number.parseInt(
+      url.searchParams.get("perPage") ?? "10",
+      10
+    );
+    const query = sanitize(url.searchParams.get("query"));
 
-  const page = Number.isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
-  const perPage = clampPerPage(perPageParam);
-  const from = (page - 1) * perPage;
-  const to = from + perPage - 1;
+    const page = Number.isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+    const perPage = clampPerPage(perPageParam);
+    const from = (page - 1) * perPage;
+    const to = from + perPage - 1;
 
-  let builder = supabase
-    .from("contact_leads")
-    .select("*", { count: "exact" })
-    .order("created_at", { ascending: false });
+    console.log(`API GET: Fetching contact leads - page=${page}, perPage=${perPage}, query="${query}"`);
 
-  if (query) {
-    builder = builder.or(buildSearchFilter(query), { foreignTable: undefined });
-  }
+    let builder = supabase
+      .from("contact_leads")
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false });
 
-  const { data, count, error } = await builder.range(from, to);
+    if (query) {
+      builder = builder.or(buildSearchFilter(query), { foreignTable: undefined });
+    }
 
-  if (error) {
-    console.error("Failed to fetch contact leads:", error);
+    const { data, count, error } = await builder.range(from, to);
+
+    if (error) {
+      console.error("Failed to fetch contact leads:", error);
+      console.error("Error details:", JSON.stringify(error, null, 2));
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Unable to load contact leads: ${error.message || "Database error"}`,
+        },
+        { status: 500 }
+      );
+    }
+
+    const total = count ?? 0;
+    const totalPages = total === 0 ? 1 : Math.ceil(total / perPage);
+
+    console.log(`API GET: Fetched ${data?.length || 0} contact leads (total: ${total})`);
+
+    const response = NextResponse.json({
+      success: true,
+      data: data ?? [],
+      pagination: {
+        page,
+        perPage,
+        total,
+        totalPages,
+        hasPrevious: page > 1,
+        hasNext: page < totalPages,
+      },
+    });
+
+    // Add cache control headers to ensure fresh data
+    response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    response.headers.set("Pragma", "no-cache");
+    response.headers.set("Expires", "0");
+
+    return response;
+  } catch (error) {
+    console.error("Unexpected error in GET /api/contact-leads:", error);
     return NextResponse.json(
       {
         success: false,
-        message: "Unable to load contact leads.",
+        message: "An unexpected error occurred while fetching contact leads.",
       },
       { status: 500 }
     );
   }
-
-  const total = count ?? 0;
-  const totalPages = total === 0 ? 1 : Math.ceil(total / perPage);
-
-  return NextResponse.json({
-    success: true,
-    data: data ?? [],
-    pagination: {
-      page,
-      perPage,
-      total,
-      totalPages,
-      hasPrevious: page > 1,
-      hasNext: page < totalPages,
-    },
-  });
 }
 
 export async function POST(request: Request) {
-  const supabase = createServiceRoleClient();
+  try {
+    const supabase = createServiceRoleClient();
 
-  const body = (await request.json()) as ContactLeadPayload;
-  const name = sanitize(body.name);
-  const email = sanitize(body.email);
-  const contact = sanitize(body.contact);
-  const subject = sanitize(body.subject);
-  const message = sanitize(body.message);
+    const body = (await request.json()) as ContactLeadPayload;
+    const name = sanitize(body.name);
+    const email = sanitize(body.email);
+    const contact = sanitize(body.contact);
+    const subject = sanitize(body.subject);
+    const message = sanitize(body.message);
 
-  if (!name || !email || !message) {
+    if (!name || !email || !message) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Name, email, and message are required.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const { data, error } = await supabase
+      .from("contact_leads")
+      .insert({
+        name,
+        email,
+        contact: contact || null,
+        subject: subject || null,
+        message,
+      })
+      .select();
+
+    if (error) {
+      console.error("Failed to save contact lead:", error);
+      console.error("Error details:", JSON.stringify(error, null, 2));
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Unable to submit your request. Error: ${error.message || "Database error"}`,
+        },
+        { status: 500 }
+      );
+    }
+
+    console.log("Contact lead saved successfully:", data);
+
+    const response = NextResponse.json({
+      success: true,
+      message: "Thank you! Our team will contact you shortly.",
+      data: data?.[0],
+    });
+
+    // Add cache control headers to ensure fresh data
+    response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    response.headers.set("Pragma", "no-cache");
+    response.headers.set("Expires", "0");
+
+    return response;
+  } catch (error) {
+    console.error("Unexpected error in POST /api/contact-leads:", error);
     return NextResponse.json(
       {
         success: false,
-        message: "Name, email, and message are required.",
-      },
-      { status: 400 }
-    );
-  }
-
-  const { error } = await supabase.from("contact_leads").insert({
-    name,
-    email,
-    contact,
-    subject,
-    message,
-  });
-
-  if (error) {
-    console.error("Failed to save contact lead:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Unable to submit your request. Please try again later.",
+        message: "An unexpected error occurred. Please try again later.",
       },
       { status: 500 }
     );
   }
-
-  return NextResponse.json({
-    success: true,
-    message: "Thank you! Our team will contact you shortly.",
-  });
 }
 
 

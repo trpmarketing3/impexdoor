@@ -15,7 +15,7 @@ export default function Navigation() {
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About' },
     { href: '/plans', label: 'Our Plans' },
-    { href: '/channel', label: 'Our Channel' },
+    { href: '/channel', label: 'Videos' },
     { href: '/contact', label: 'Contact' }
   ];
 

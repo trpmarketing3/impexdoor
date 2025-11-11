@@ -1,7 +1,6 @@
 'use client';
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { contactConfig } from "../../config/contact";
@@ -17,7 +16,7 @@ export default function Header() {
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About' },
     { href: '/plans', label: 'Our Plans' },
-    { href: '/channel', label: 'Our Channel' },
+    { href: '/channel', label: 'Videos' },
     { href: '/contact', label: 'Contact' }
   ];
 
@@ -59,22 +58,9 @@ export default function Header() {
           <div className="flex items-center justify-between flex-wrap gap-2 md:gap-4 py-4 md:py-6">
             {/* Logo - Extreme Left */}
             <Link href="/" className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-              <div className="flex items-baseline">
-                <span className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">IMPEX</span>
-                {/* Door/Globe Icon */}
-                <div className="relative w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 inline-block mx-1">
-                  <Image
-                    src="/images/globe.png"
-                    alt="IMPEX DOOR"
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-                <span className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">DOOR</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs md:text-sm font-bold text-[#00bcd4] leading-tight">LLP</span>
-              </div>
+              <span className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">IMPEX</span>
+              <span className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">DOOR</span>
+              <span className="text-xl md:text-2xl lg:text-3xl font-bold text-[#00bcd4]">LLP</span>
             </Link>
 
             {/* Center Navigation Tabs - Desktop Only */}
