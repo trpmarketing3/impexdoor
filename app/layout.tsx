@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import VideoPopup from "./components/VideoPopup";
 
 export const metadata: Metadata = {
   title: "IMPEX DOOR LLP | Global Trade Solutions",
@@ -31,7 +30,6 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         {children}
-        <VideoPopup />
       </body>
     </html>
   );

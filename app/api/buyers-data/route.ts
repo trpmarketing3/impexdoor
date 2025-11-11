@@ -51,6 +51,8 @@ export async function GET(request: Request) {
   );
   const query = sanitize(url.searchParams.get("query"));
   const category = normalizeCategory(url.searchParams.get("category") ?? "");
+  // For public pages, only show Active buyers. Admin can see all by not passing activeOnly=true
+  const activeOnly = url.searchParams.get("activeOnly") !== "false";
 
   const page = Number.isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
   const perPage = clampPerPage(perPageParam);
@@ -61,6 +63,11 @@ export async function GET(request: Request) {
     .from("buyers_data")
     .select("*", { count: "exact" })
     .order("created_at", { ascending: false });
+
+  // Filter by status for public pages (only show Active)
+  if (activeOnly) {
+    builder = builder.eq("status", "Active");
+  }
 
   if (category !== DEFAULT_BUYER_CATEGORY) {
     builder = builder.eq("category", category);
@@ -165,6 +172,114 @@ export async function POST(request: Request) {
   return NextResponse.json({
     success: true,
     message: "Buyer data created successfully.",
+  });
+}
+
+export async function PUT(request: Request) {
+  const supabase = createServiceRoleClient();
+  const url = new URL(request.url);
+  const id = url.searchParams.get("id");
+
+  if (!id) {
+    return NextResponse.json(
+      { success: false, message: "Buyer ID is required." },
+      { status: 400 }
+    );
+  }
+
+  const body = (await request.json()) as BuyerDataPayload;
+
+  const category = normalizeCategory(body.category);
+  const title = sanitize(body.title);
+  const description = sanitize(body.description).slice(
+    0,
+    MAX_DESCRIPTION_LENGTH
+  );
+  const buyerFrom = sanitize(body.buyerFrom);
+  const quantity = sanitize(body.quantity);
+  const destination = sanitize(body.destination);
+  const paymentTerms = sanitize(body.paymentTerms);
+  const lookingSuppliersFrom = sanitize(body.lookingSuppliersFrom);
+  const status =
+    ALLOWED_STATUSES.find(
+      (value) => value.toLowerCase() === sanitize(body.status).toLowerCase()
+    ) ?? undefined;
+
+  if (!title) {
+    return NextResponse.json(
+      { success: false, message: "Title is required." },
+      { status: 400 }
+    );
+  }
+
+  const updateData: Record<string, any> = {
+    category,
+    title,
+    description,
+    buyer_from: buyerFrom,
+    quantity,
+    destination,
+    payment_terms: paymentTerms,
+    looking_suppliers_from: lookingSuppliersFrom,
+  };
+
+  if (status) {
+    updateData.status = status;
+  }
+
+  const { error } = await supabase
+    .from("buyers_data")
+    .update(updateData)
+    .eq("id", id);
+
+  if (error) {
+    console.error("Failed to update buyer data:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Unable to update buyer data. Please try again later.",
+      },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({
+    success: true,
+    message: "Buyer data updated successfully.",
+  });
+}
+
+export async function DELETE(request: Request) {
+  const supabase = createServiceRoleClient();
+  const url = new URL(request.url);
+  const id = url.searchParams.get("id");
+
+  if (!id) {
+    return NextResponse.json(
+      { success: false, message: "Buyer ID is required." },
+      { status: 400 }
+    );
+  }
+
+  const { error } = await supabase
+    .from("buyers_data")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.error("Failed to delete buyer data:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Unable to delete buyer data. Please try again later.",
+      },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({
+    success: true,
+    message: "Buyer data deleted successfully.",
   });
 }
 

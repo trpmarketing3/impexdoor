@@ -8,6 +8,19 @@ import Footer from "./components/Footer";
 import { useState, useEffect, useMemo } from "react";
 import { contactConfig } from "../config/contact";
 
+interface Buyer {
+  id: string;
+  title: string;
+  buyer_from: string | null;
+  quantity: string | null;
+  destination: string | null;
+  payment_terms: string | null;
+  looking_suppliers_from: string | null;
+  description: string | null;
+  category: string;
+  created_at: string;
+}
+
 export default function Home() {
   // Auto-playing slides
   const slides = [
@@ -82,141 +95,33 @@ export default function Home() {
     return () => clearInterval(timer);
   }, [maxIndex]);
 
-  // Buyers data cards
-  const buyers = [
-    {
-      id: 1,
-      verified: true,
-      date: "Nov-04-25",
-      country: "Singapore",
-      countryCode: "SG",
-      title: "Wanted : Scrap Like Copper Scrap",
-      buyerFrom: "Singapore, Singapore, Singapore",
-      quantity: "200 - 500 Metric Tons",
-      destination: "India",
-      paymentTerms: "L/C Or T/T",
-      supplierOrigin: "Worldwide",
-      description: "Please provide a quotation to the following requirement from importer",
-      category: "Metal Scraps",
-      subCategory: "Copper Scrap"
-    },
-    {
-      id: 2,
-      verified: true,
-      date: "Nov-03-25",
-      country: "USA",
-      countryCode: "US",
-      title: "Wanted : Premium Cotton Fabric",
-      buyerFrom: "New York, USA",
-      quantity: "1000 - 2000 Yards",
-      destination: "Bangladesh",
-      paymentTerms: "T/T Advance",
-      supplierOrigin: "Asia",
-      description: "Looking for high-quality cotton fabric for manufacturing",
-      category: "Textiles",
-      subCategory: "Cotton Fabric"
-    },
-    {
-      id: 3,
-      verified: true,
-      date: "Nov-02-25",
-      country: "Germany",
-      countryCode: "DE",
-      title: "Wanted : Industrial Machinery Parts",
-      buyerFrom: "Berlin, Germany",
-      quantity: "50 - 100 Units",
-      destination: "Germany",
-      paymentTerms: "L/C at Sight",
-      supplierOrigin: "Worldwide",
-      description: "Require industrial machinery parts for manufacturing unit",
-      category: "Machinery",
-      subCategory: "Industrial Parts"
-    },
-    {
-      id: 4,
-      verified: true,
-      date: "Nov-01-25",
-      country: "Japan",
-      countryCode: "JP",
-      title: "Wanted : Organic Green Tea",
-      buyerFrom: "Tokyo, Japan",
-      quantity: "500 - 1000 Kg",
-      destination: "Japan",
-      paymentTerms: "L/C 30 Days",
-      supplierOrigin: "India, China, Sri Lanka",
-      description: "Seeking premium quality organic green tea",
-      category: "Food & Beverages",
-      subCategory: "Tea"
-    },
-    {
-      id: 5,
-      verified: true,
-      date: "Oct-31-25",
-      country: "UAE",
-      countryCode: "AE",
-      title: "Wanted : Crude Oil",
-      buyerFrom: "Dubai, UAE",
-      quantity: "10000 - 20000 Barrels",
-      destination: "UAE",
-      paymentTerms: "T/T or L/C",
-      supplierOrigin: "Middle East, Africa",
-      description: "Regular requirement for crude oil supply",
-      category: "Oil & Gas",
-      subCategory: "Crude Oil"
-    },
-    {
-      id: 6,
-      verified: true,
-      date: "Oct-30-25",
-      country: "UK",
-      countryCode: "GB",
-      title: "Wanted : Handmade Carpets",
-      buyerFrom: "London, UK",
-      quantity: "200 - 500 Pieces",
-      destination: "UK",
-      paymentTerms: "T/T 50% Advance",
-      supplierOrigin: "India, Pakistan, Iran",
-      description: "Premium handmade carpets for retail business",
-      category: "Home Decor",
-      subCategory: "Carpets"
-    },
-    {
-      id: 7,
-      verified: true,
-      date: "Oct-29-25",
-      country: "Australia",
-      countryCode: "AU",
-      title: "Wanted : Fresh Fruits",
-      buyerFrom: "Sydney, Australia",
-      quantity: "5000 - 10000 Kg",
-      destination: "Australia",
-      paymentTerms: "T/T Net 30",
-      supplierOrigin: "Asia, South America",
-      description: "Regular import of fresh seasonal fruits",
-      category: "Agriculture",
-      subCategory: "Fruits"
-    },
-    {
-      id: 8,
-      verified: true,
-      date: "Oct-28-25",
-      country: "Canada",
-      countryCode: "CA",
-      title: "Wanted : Timber & Wood Products",
-      buyerFrom: "Toronto, Canada",
-      quantity: "1000 - 2000 Cubic Meters",
-      destination: "Canada",
-      paymentTerms: "L/C or T/T",
-      supplierOrigin: "North America, Europe",
-      description: "Sustainable timber and wood products required",
-      category: "Forestry",
-      subCategory: "Timber"
-    }
-  ];
+  // Buyers data state
+  const [buyers, setBuyers] = useState<Buyer[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Initial cards to show: 6 on desktop, 4 on mobile
   const initialCardsDesktop = 6;
   const initialCardsMobile = 4;
+
+  // Fetch buyers data from API
+  useEffect(() => {
+    const fetchBuyers = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/buyers-data?activeOnly=true&perPage=100');
+        const result = await response.json();
+        if (result.success && result.data) {
+          setBuyers(result.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch buyers:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBuyers();
+  }, []);
 
   return (
     <main className="min-h-screen">
@@ -340,8 +245,17 @@ export default function Home() {
 
           {/* Mobile: Vertical cards (4 cards) */}
           <div className="md:hidden">
-            <div className="grid grid-cols-1 gap-4 mb-6">
-              {buyers.slice(0, initialCardsMobile).map((buyer) => {
+            {loading ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600">Loading buyers data...</p>
+              </div>
+            ) : buyers.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600">No buyers data available.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 mb-6">
+                {buyers.slice(0, initialCardsMobile).map((buyer) => {
                 return (
                 <div
                   key={buyer.id}
@@ -350,14 +264,12 @@ export default function Home() {
                 {/* Card Header */}
                 <div className="p-4 pb-3 bg-gray-50 border-b border-gray-200">
                   <div className="flex items-center">
-                    {buyer.verified && (
-                      <div className="flex items-center gap-1">
-                        <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        <span className="text-xs font-semibold text-green-600">VERIFIED</span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-1">
+                      <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-xs font-semibold text-green-600">VERIFIED</span>
+                    </div>
                   </div>
                 </div>
 
@@ -370,34 +282,41 @@ export default function Home() {
                     </h3>
                   </div>
 
-                  <p className="text-sm font-semibold text-gray-800 mb-3">
-                    Buyer From {buyer.buyerFrom}
-                  </p>
+                  {buyer.buyer_from && (
+                    <p className="text-sm font-semibold text-gray-800 mb-3">
+                      Buyer From {buyer.buyer_from}
+                    </p>
+                  )}
 
                   <div className="space-y-2 mb-4 flex-1">
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                      <span><strong>Quantity:</strong> {buyer.quantity}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span><strong>Destination:</strong> {buyer.destination}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span><strong>Payment:</strong> {buyer.paymentTerms}</span>
-                    </div>
+                    {buyer.quantity && (
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span><strong>Quantity:</strong> {buyer.quantity}</span>
+                      </div>
+                    )}
+                    {buyer.destination && (
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span><strong>Destination:</strong> {buyer.destination}</span>
+                      </div>
+                    )}
+                    {buyer.payment_terms && (
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span><strong>Payment:</strong> {buyer.payment_terms}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex flex-wrap gap-2 mb-4">
                     <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded">Buyer Of {buyer.category}</span>
-                    <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded">{buyer.subCategory}</span>
                   </div>
 
                   <Link href="/contact" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-center">
@@ -410,132 +329,154 @@ export default function Home() {
               </div>
               );
               })}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Desktop: Horizontal cards - 2 cards per row, 6 cards total (3 rows) */}
           <div className="hidden md:block pb-4 mb-6">
-            <div className="grid grid-cols-2 gap-8 max-w-6xl mx-auto">
-              {buyers.slice(0, initialCardsDesktop).map((buyer) => {
-                return (
-                <div
-                  key={buyer.id}
-                  className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-500 border border-gray-200 overflow-hidden w-full flex flex-col"
-                >
-                  {/* Card Header */}
-                  <div className="p-4 pb-3 bg-gray-50 border-b border-gray-200">
-                    <div className="flex items-center">
-                      {buyer.verified && (
+            {loading ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600">Loading buyers data...</p>
+              </div>
+            ) : buyers.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600">No buyers data available.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-8 max-w-6xl mx-auto">
+                {buyers.slice(0, initialCardsDesktop).map((buyer) => {
+                  return (
+                  <div
+                    key={buyer.id}
+                    className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-500 border border-gray-200 overflow-hidden w-full flex flex-col"
+                  >
+                    {/* Card Header */}
+                    <div className="p-4 pb-3 bg-gray-50 border-b border-gray-200">
+                      <div className="flex items-center">
                         <div className="flex items-center gap-1">
                           <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                           </svg>
                           <span className="text-xs font-semibold text-green-600">VERIFIED</span>
                         </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Card Body - Horizontal Layout */}
-                  <div className="p-4 flex-1 flex flex-row gap-6">
-                    {/* Left Column */}
-                    <div className="flex-1 flex flex-col">
-                      <div className="flex items-start gap-2 mb-3">
-                        <div className="text-2xl">🏳️</div>
-                        <h3 className="text-base font-bold text-blue-700 leading-tight flex-1">
-                          {buyer.title}
-                        </h3>
-                      </div>
-
-                      <p className="text-sm font-semibold text-gray-800 mb-3">
-                        Buyer From {buyer.buyerFrom}
-                      </p>
-
-                      <div className="mb-4">
-                        <h4 className="text-sm font-semibold text-gray-800 mb-1">Product Description</h4>
-                        <p className="text-xs text-gray-600">{buyer.description}</p>
                       </div>
                     </div>
 
-                    {/* Right Column */}
-                    <div className="flex-1 flex flex-col">
-                      <div className="flex flex-col gap-2 mb-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                          </svg>
-                          <span><strong>Quantity Required:</strong> {buyer.quantity}</span>
+                    {/* Card Body - Horizontal Layout */}
+                    <div className="p-4 flex-1 flex flex-row gap-6">
+                      {/* Left Column */}
+                      <div className="flex-1 flex flex-col">
+                        <div className="flex items-start gap-2 mb-3">
+                          <div className="text-2xl">🏳️</div>
+                          <h3 className="text-base font-bold text-blue-700 leading-tight flex-1">
+                            {buyer.title}
+                          </h3>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span><strong>Destination:</strong> {buyer.destination}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span><strong>Payment Terms:</strong> {buyer.paymentTerms}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span><strong>Looking for suppliers from:</strong> {buyer.supplierOrigin}</span>
-                        </div>
+
+                        {buyer.buyer_from && (
+                          <p className="text-sm font-semibold text-gray-800 mb-3">
+                            Buyer From {buyer.buyer_from}
+                          </p>
+                        )}
+
+                        {buyer.description && (
+                          <div className="mb-4">
+                            <h4 className="text-sm font-semibold text-gray-800 mb-1">Product Description</h4>
+                            <p className="text-xs text-gray-600">{buyer.description}</p>
+                          </div>
+                        )}
                       </div>
 
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded">Buyer Of {buyer.category}</span>
-                        <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded">{buyer.subCategory}</span>
+                      {/* Right Column */}
+                      <div className="flex-1 flex flex-col">
+                        <div className="flex flex-col gap-2 mb-4">
+                          {buyer.quantity && (
+                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                              <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                              </svg>
+                              <span><strong>Quantity Required:</strong> {buyer.quantity}</span>
+                            </div>
+                          )}
+                          {buyer.destination && (
+                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                              <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span><strong>Destination:</strong> {buyer.destination}</span>
+                            </div>
+                          )}
+                          {buyer.payment_terms && (
+                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                              <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span><strong>Payment Terms:</strong> {buyer.payment_terms}</span>
+                            </div>
+                          )}
+                          {buyer.looking_suppliers_from && (
+                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                              <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span><strong>Looking for suppliers from:</strong> {buyer.looking_suppliers_from}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded">Buyer Of {buyer.category}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Action Button */}
-                  <div className="p-4 pt-0">
-                    <Link href="/contact" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                      <span>Inquire Now</span>
-                    </Link>
+                    {/* Action Button */}
+                    <div className="p-4 pt-0">
+                      <Link href="/contact" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        <span>Inquire Now</span>
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              );
-              })}
+                );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Show All Button - Only show if there are more buyers than displayed */}
+          {!loading && buyers.length > Math.max(initialCardsDesktop, initialCardsMobile) && (
+            <div className="text-center mt-8">
+              <Link
+                href="/buyers"
+                className="inline-block bg-[#00bcd4] hover:bg-[#00acc1] text-white font-semibold px-8 py-3 rounded-lg transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                Show All Buyers
+              </Link>
             </div>
-          </div>
-
-          {/* Show All Button */}
-          <div className="text-center mt-8">
-            <Link
-              href="/buyers"
-              className="inline-block bg-[#00bcd4] hover:bg-[#00acc1] text-white font-semibold px-8 py-3 rounded-lg transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              Show All Buyers
-            </Link>
-          </div>
+          )}
         </div>
       </section>
 
   {/* Product Categories Section */}
-  <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-b from-gray-50 to-white">
+  <section className="py-10 sm:py-16 md:py-20 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10 md:mb-12 lg:mb-16">
-            <h2 className="text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6">
-              Discover Premium <span className="text-blue-600">Products for Global Buyers</span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Our Solutions
             </h2>
             <p className="text-lg sm:text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto px-2">
-              Explore our extensive range of high-quality export products from verified suppliers worldwide
+              Explore our comprehensive range of product categories for global buyers
             </p>
             <div className="w-24 h-1 bg-blue-600 mx-auto mt-4"></div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
             {/* Fruits and Vegetables */}
-            <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white">
               <div className="relative h-48 sm:h-56 md:h-64">
                 <Image
                   src="https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=800&q=80"
@@ -545,13 +486,20 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <h3 className="text-white font-bold text-sm md:text-base lg:text-lg">Fruits & Vegetables</h3>
+                  <h3 className="text-white font-bold text-base md:text-lg lg:text-xl mb-1">
+                    Fruits and Vegetables
+                  </h3>
                 </div>
+              </div>
+              <div className="p-4">
+                <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+                  Fresh and high-quality fruits and vegetables for global export markets
+                </p>
               </div>
             </div>
 
             {/* Readymade Garments */}
-            <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white">
               <div className="relative h-48 sm:h-56 md:h-64">
                 <Image
                   src="https://images.unsplash.com/photo-1445205170230-053b83016050?w=800&q=80"
@@ -561,13 +509,20 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <h3 className="text-white font-bold text-sm md:text-base lg:text-lg">Readymade Garments</h3>
+                  <h3 className="text-white font-bold text-base md:text-lg lg:text-xl mb-1">
+                    Readymade Garments
+                  </h3>
                 </div>
+              </div>
+              <div className="p-4">
+                <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+                  Premium ready-made garments and apparel for international buyers
+                </p>
               </div>
             </div>
 
             {/* Gems and Jewellery */}
-            <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white">
               <div className="relative h-48 sm:h-56 md:h-64">
                 <Image
                   src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&q=80"
@@ -577,13 +532,20 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <h3 className="text-white font-bold text-sm md:text-base lg:text-lg">Gems & Jewellery</h3>
+                  <h3 className="text-white font-bold text-base md:text-lg lg:text-xl mb-1">
+                    Gems and Jewellery
+                  </h3>
                 </div>
+              </div>
+              <div className="p-4">
+                <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+                  Exquisite gems and fine jewellery for export to global markets
+                </p>
               </div>
             </div>
 
             {/* Chemical Products */}
-            <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white">
               <div className="relative h-48 sm:h-56 md:h-64">
                 <Image
                   src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&q=80"
@@ -593,13 +555,20 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <h3 className="text-white font-bold text-sm md:text-base lg:text-lg">Chemical Products</h3>
+                  <h3 className="text-white font-bold text-base md:text-lg lg:text-xl mb-1">
+                    Chemical Products
+                  </h3>
                 </div>
+              </div>
+              <div className="p-4">
+                <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+                  High-grade chemical products and compounds for industrial use
+                </p>
               </div>
             </div>
 
             {/* Pharmaceutical Products */}
-            <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white">
               <div className="relative h-48 sm:h-56 md:h-64">
                 <Image
                   src="https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=800&q=80"
@@ -609,13 +578,20 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <h3 className="text-white font-bold text-sm md:text-base lg:text-lg">Pharmaceutical Products</h3>
+                  <h3 className="text-white font-bold text-base md:text-lg lg:text-xl mb-1">
+                    Pharmaceutical Products
+                  </h3>
                 </div>
+              </div>
+              <div className="p-4">
+                <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+                  Pharmaceutical products meeting international quality standards
+                </p>
               </div>
             </div>
 
             {/* Organic Products */}
-            <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white">
               <div className="relative h-48 sm:h-56 md:h-64">
                 <Image
                   src="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80"
@@ -625,13 +601,20 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <h3 className="text-white font-bold text-sm md:text-base lg:text-lg">Organic Products</h3>
+                  <h3 className="text-white font-bold text-base md:text-lg lg:text-xl mb-1">
+                    Organic Products
+                  </h3>
                 </div>
+              </div>
+              <div className="p-4">
+                <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+                  Certified organic products for health-conscious global consumers
+                </p>
               </div>
             </div>
 
             {/* Engineering Products */}
-            <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white">
               <div className="relative h-48 sm:h-56 md:h-64">
                 <Image
                   src="https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&q=80"
@@ -641,13 +624,20 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <h3 className="text-white font-bold text-sm md:text-base lg:text-lg">Engineering Products</h3>
+                  <h3 className="text-white font-bold text-base md:text-lg lg:text-xl mb-1">
+                    Engineering Products
+                  </h3>
                 </div>
+              </div>
+              <div className="p-4">
+                <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+                  Precision engineering products and machinery components
+                </p>
               </div>
             </div>
 
             {/* Plastic Products */}
-            <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white">
               <div className="relative h-48 sm:h-56 md:h-64">
                 <Image
                   src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=800&q=80"
@@ -657,13 +647,20 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <h3 className="text-white font-bold text-sm md:text-base lg:text-lg">Plastic Products</h3>
+                  <h3 className="text-white font-bold text-base md:text-lg lg:text-xl mb-1">
+                    Plastic Products
+                  </h3>
                 </div>
+              </div>
+              <div className="p-4">
+                <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+                  High-quality plastic products and packaging solutions
+                </p>
               </div>
             </div>
 
             {/* Spices Products */}
-            <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white">
               <div className="relative h-48 sm:h-56 md:h-64">
                 <Image
                   src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&q=80"
@@ -673,13 +670,20 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <h3 className="text-white font-bold text-sm md:text-base lg:text-lg">Spices Products</h3>
+                  <h3 className="text-white font-bold text-base md:text-lg lg:text-xl mb-1">
+                    Spices Products
+                  </h3>
                 </div>
+              </div>
+              <div className="p-4">
+                <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+                  Premium spices and condiments for global culinary markets
+                </p>
               </div>
             </div>
 
             {/* Textile Products */}
-            <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white">
               <div className="relative h-48 sm:h-56 md:h-64">
                 <Image
                   src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&q=80"
@@ -689,8 +693,15 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <h3 className="text-white font-bold text-sm md:text-base lg:text-lg">Textile Products</h3>
+                  <h3 className="text-white font-bold text-base md:text-lg lg:text-xl mb-1">
+                    Textile Products
+                  </h3>
                 </div>
+              </div>
+              <div className="p-4">
+                <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+                  Fine textiles and fabric products for international fashion industry
+                </p>
               </div>
             </div>
           </div>
