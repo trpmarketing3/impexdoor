@@ -1,6 +1,7 @@
 'use client';
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { contactConfig } from "../../config/contact";
@@ -57,10 +58,16 @@ export default function Header() {
         <div className="container mx-auto px-3 md:px-4">
           <div className="flex items-center justify-between flex-wrap gap-2 md:gap-4 py-4 md:py-6">
             {/* Logo - Extreme Left */}
-            <Link href="/" className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-              <span className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">IMPEX</span>
-              <span className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">DOOR</span>
-              <span className="text-xl md:text-2xl lg:text-3xl font-bold text-[#00bcd4]">LLP</span>
+            <Link href="/" className="flex-shrink-0">
+              <Image
+                src="/images/logo1.png"
+                alt="IMPEX DOOR LLP"
+                width={400}
+                height={100}
+                className="h-12 md:h-14 lg:h-16 w-auto"
+                priority
+              />
+
             </Link>
 
             {/* Center Navigation Tabs - Desktop Only */}

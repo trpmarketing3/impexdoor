@@ -6,14 +6,13 @@ export const contactConfig = {
     whatsapp: "919850051646", // For WhatsApp links
   },
   email: {
-    primary: "info@impexdoor.com",
-    support: "support@impexdoor.com",
+    primary: "impexdoor2@gmail.com"
   },
   address: {
-    street: "IMPEX DOOR LLP, 4/803, Velachery - Tambaram Main Rd",
-    city: "Medavakkam",
-    state: "Tamil Nadu",
-    zip: "600100",
+    street: "IMPEX DOOR LLP, 6&7 Floor, Roognta Shopping Hub, Near Hotel Tapasvi",
+    city: "Indira Nagar, Nashik",
+    state: "Maharashtra",
+    zip: "422009",
     country: "India",
   },
 };

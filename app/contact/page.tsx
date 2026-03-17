@@ -97,7 +97,7 @@ export default function Contact() {
               <div className="w-20 h-1 bg-[#00bcd4] mb-8"></div>
 
               <form className="space-y-4" onSubmit={handleSubmit}>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid gap-4">
                   <div>
                     <input
                       type="text"
@@ -115,7 +115,7 @@ export default function Contact() {
                     />
                   </div>
                 </div>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid gap-4">
                   <div>
                     <input
                       type="tel"
@@ -133,14 +133,14 @@ export default function Contact() {
                     />
                   </div>
                 </div>
-                <div>
+                {/* <div>
                   <textarea
                     placeholder="Message"
                     name="message"
                     rows={4}
                     className="w-full px-4 py-3 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00bcd4] resize-none border border-gray-300"
                   ></textarea>
-                </div>
+                </div> */}
                 {error ? (
                   <p className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
                     {error}
@@ -257,12 +257,6 @@ export default function Contact() {
                       >
                         {contactConfig.email.primary}
                       </a>
-                      <a
-                        href={`mailto:${contactConfig.email.support}`}
-                        className="text-blue-600 hover:underline text-sm block"
-                      >
-                        {contactConfig.email.support}
-                      </a>
                     </div>
                   </div>
                 </div>
@@ -287,7 +281,7 @@ export default function Contact() {
             </h2>
             <div className="rounded-xl overflow-hidden shadow-xl border border-gray-200">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3890.123456789!2d80.1885!3d12.9716!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTLCsDU4JzE3LjgiTiA4MMKwMTEnMTguNiJF!5e0!3m2!1sen!2sin!4v1234567890123!5m2!1sen!2sin"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3749.7679207294373!2d73.7772481737637!3d19.976260023097282!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bddeb53e40e0789%3A0xdc33a8caa97b74ec!2sIMPEX%20DOOR!5e0!3m2!1sen!2sin!4v1773738901682!5m2!1sen!2sin"
                 width="100%"
                 height="450"
                 style={{ border: 0 }}
