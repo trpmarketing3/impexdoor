@@ -772,10 +772,10 @@ export default function Home() {
               >
                 <div
                   key={index}
-                  className="group relative w-[320px] mx-auto overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white"
+                  className="group relative w-[300px] mx-auto overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white"
                 >
                   {/* Image Section */}
-                  <div className="relative h-[320px] sm:h-[300px] md:h-[320px] lg:h-[340px] overflow-hidden">
+                  <div className="relative h-[320px] sm:h-[300px] md:h-[300px] lg:h-[300px] overflow-hidden">
                     <Image
                       src={item.img}
                       alt={item.title}
